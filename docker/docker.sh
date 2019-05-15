@@ -1,5 +1,5 @@
-DOCKER_IMAGE="kazee/abmatrix"
-CONTAINER_NAME="abm"
+DOCKER_IMAGE="kazee/ladder"
+CONTAINER_NAME="ladder"
 
 docker ps | grep ${CONTAINER_NAME} > /dev/null 2>&1
 

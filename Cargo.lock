@@ -1521,7 +1521,7 @@ dependencies = [
  "futures 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "node-cli 1.0.0",
  "node-runtime 1.0.0",
- "signer 0.1.0",
+ "signer 0.1.0 (git+https://github.com/laddernetwork/signer)",
  "vendor 0.1.0",
  "vergen 3.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -2212,7 +2212,7 @@ dependencies = [
  "node-primitives 1.0.0",
  "node-runtime 1.0.0",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "signer 0.1.0",
+ "signer 0.1.0 (git+https://github.com/laddernetwork/signer)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate)",
  "structopt 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3220,6 +3220,7 @@ dependencies = [
 [[package]]
 name = "signer"
 version = "0.1.0"
+source = "git+https://github.com/laddernetwork/signer#a139b37bbaaaa2ef45a3bd0ee86738c448d47433"
 dependencies = [
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "protobuf 2.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -5051,7 +5052,7 @@ dependencies = [
  "serde 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
- "signer 0.1.0",
+ "signer 0.1.0 (git+https://github.com/laddernetwork/signer)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate)",
  "srml-session 2.0.0 (git+https://github.com/paritytech/substrate)",
  "substrate-client 2.0.0 (git+https://github.com/paritytech/substrate)",
@@ -5720,6 +5721,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum sha2 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7b4d8bfd0e469f417657573d8451fb33d16cfe0989359b93baf3a1ffc639543d"
 "checksum sha3 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "dd26bc0e7a2e3a7c959bc494caf58b72ee0c71d67704e9520f736ca7e4853ecf"
 "checksum shell32-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9ee04b46101f57121c9da2b151988283b6beb79b34f5bb29a58ee48cb695122c"
+"checksum signer 0.1.0 (git+https://github.com/laddernetwork/signer)" = "<none>"
 "checksum slab 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "17b4fcaed89ab08ef143da37bc52adbcc04d4a69014f4c1208d6b51f0c47bc23"
 "checksum slab 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 "checksum slog 2.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1e1a2eec401952cd7b12a84ea120e2d57281329940c3f93c2bf04f462539508e"

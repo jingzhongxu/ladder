@@ -47,13 +47,13 @@ error_chain::quick_main!(run);
 
 fn run() -> cli::error::Result<()> {
 	let version = VersionInfo {
-		name: "Substrate Node",
+		name: "Ladder Node",
 		commit: env!("VERGEN_SHA_SHORT"),
 		version: env!("CARGO_PKG_VERSION"),
-		executable_name: "substrate",
-		author: "Parity Technologies <admin@parity.io>",
-		description: "Generic substrate node",
-		support_url: "https://github.com/paritytech/substrate/issues/new",
+		executable_name: "ladder",
+		author: "Ladder Network <contact@laddernetwork.io>",
+		description: "A Cross-chain solution on Substrate",
+		support_url: "https://github.com/laddernetwork/ladder/issues/new",
 	};
 	cli::run(::std::env::args(), Exit, version)
 }

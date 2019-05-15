@@ -1,7 +1,7 @@
 [package]
 name = "ladder-signcheck"
 version = "0.1.0"
-authors = ["Takumi Yamashita <s.a.t.e.3.ths@gmail.com>"]
+authors = ["Ladder Network <contact@laddernetwork.io>"]
 edition = "2018"
 
 [dependencies.parity-codec]

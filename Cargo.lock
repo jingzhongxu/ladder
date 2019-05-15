@@ -1513,6 +1513,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ladder"
+version = "1.0.0"
+dependencies = [
+ "ctrlc 3.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
+ "node-cli 1.0.0",
+ "node-runtime 1.0.0",
+ "signer 0.1.0",
+ "vendor 0.1.0",
+ "vergen 3.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "ladder-bank"
 version = "0.1.0"
 dependencies = [
@@ -3823,20 +3837,6 @@ dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.34 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "substrate"
-version = "1.0.0"
-dependencies = [
- "ctrlc 3.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "futures 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
- "node-cli 1.0.0",
- "node-runtime 1.0.0",
- "signer 0.1.0",
- "vendor 0.1.0",
- "vergen 3.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

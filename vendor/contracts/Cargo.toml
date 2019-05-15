@@ -1,7 +1,7 @@
 [package]
 name = "contracts"
 version = "0.1.0"
-authors = ["Abmatrix <http://www.abmatrix.org>"]
+authors = ["Ladder Network <contact@laddernetwork.io>"]
 edition = "2018"
 
 [dependencies]
@@ -10,4 +10,3 @@ ethabi-derive = "6.0"
 ethabi-contract = "6.0"
 
 [build-dependencies]
-#solc = { git = "https://github.com/paritytech/rust_solc" }

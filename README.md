@@ -30,7 +30,7 @@ run it
 ```
 cd ./target/debug
 ./docker.sh
-./abmatrix --dev
+./ladder --dev
 ```
 
 ## UI

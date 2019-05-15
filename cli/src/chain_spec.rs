@@ -16,7 +16,7 @@
 
 //! Substrate chain configurations.
 
-use primitives::{ed25519::Public as AuthorityId, ed25519, sr25519, Pair, crypto::UncheckedInto};
+use primitives::{ed25519::Public as AuthorityId, ed25519, sr25519, Pair, crypto::{UncheckedInto, Ss58Codec}};
 use node_primitives::AccountId;
 use node_runtime::{ConsensusConfig, CouncilSeatsConfig, CouncilVotingConfig, DemocracyConfig,
 	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
@@ -400,6 +400,42 @@ fn local_testnet_genesis() -> GenesisConfig {
 pub fn local_testnet_config() -> ChainSpec {
 	ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, None)
 }
+
+// fn ladder_testnet_genesis() -> GenesisConfig {
+//     let alice_stash   = sr25519::Public::from_ss58check("5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ").unwrap();
+//     let alice_control = sr25519::Public::from_ss58check("5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ").unwrap();
+//     let bob_stash   = sr25519::Public::from_ss58check("5Gw3s7q4QLkSWwknsiPtjujPv3XM4Trxi5d4PgKMMk3gfGTE").unwrap();
+//     let bob_control = sr25519::Public::from_ss58check("5Gw3s7q4QLkSWwknsiPtjujPv3XM4Trxi5d4PgKMMk3gfGTE").unwrap();
+//     let eve_stash   = sr25519::Public::from_ss58check("5CNLHq4doqBbrrxLCxAakEgaEvef5tjSrN7QqJwcWzNd7W7k").unwrap();
+//     let eve_control = sr25519::Public::from_ss58check("5CNLHq4doqBbrrxLCxAakEgaEvef5tjSrN7QqJwcWzNd7W7k").unwrap();
+
+//     testnet_genesis(
+//         vec![
+//             (alice_stash, alice_control, alice_control),
+//             (bob_stash, bob_control, bob_control),
+//             (eve_stash, eve_control, eve_control),
+//         ],
+//         alice_control,
+//         Some(vec![alice_control, bob_control, eve_control]),
+//         false,
+//     )
+// }
+
+// /// ladder testnet config
+// pub fn ladder_testnet_config() -> ChainSpec {
+//     ChainSpec::from_genesis(
+//         "Ladder Testnet",
+//         "Ladder Testnet",
+//         local_testnet_genesis,
+//         vec![],
+//         // TODO, remove it when substrate upgrade to latest version. test that hasn't this problem.
+//         Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
+//         None,
+//         None,
+//         None,
+//     )
+// }
+
 
 #[cfg(test)]
 mod tests {

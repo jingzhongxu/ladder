@@ -1,24 +1,25 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "std")]
-use serde_derive::{Serialize, Deserialize};
+use serde_derive::{Deserialize, Serialize};
 
-use sr_primitives::traits::{Verify, Zero, CheckedAdd, CheckedSub, Hash};
-use support::{decl_module, decl_storage, decl_event, StorageValue,
-              StorageMap, dispatch::Result, Parameter,ensure};
+use sr_primitives::traits::{CheckedAdd, CheckedSub, Hash, Verify, Zero};
+use support::{
+    decl_event, decl_module, decl_storage, dispatch::Result, ensure, Parameter, StorageMap,
+    StorageValue,
+};
 
 use system::ensure_signed;
 
-use rstd::prelude::*;
 use rstd::marker::PhantomData;
+use rstd::prelude::*;
 
 #[cfg(feature = "std")]
 pub use std::fmt;
 
 // use Encode, Decode
-use parity_codec::{Encode, Decode};
+use parity_codec::{Decode, Encode};
 use rstd::ops::Div;
-
 
 pub trait Trait: session::Trait + bank::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
@@ -92,67 +93,67 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-    fn _verify(_tx : T::Hash) -> Result{
+    fn _verify(_tx: T::Hash) -> Result {
         //TODO:verify signature or others
         Ok(())
     }
 
-    pub fn check_validator(accountid: &T::AccountId) -> bool{
+    pub fn check_validator(accountid: &T::AccountId) -> bool {
         //判断是否是合法验证者集合中的人
         let validators = <session::Module<T>>::validators();
-        if !validators.contains(accountid){
+        if !validators.contains(accountid) {
             return false;
         }
         true
     }
 
     /// 签名并判断如果当前签名数量足够就发送一个事件
-       /// Sign and determine if the current number of signatures is sufficient to send an event
-    pub  fn check_signature(who: T::AccountId, exchangerate : u64 ,time : u64, extype: u64) -> Result{
-
+    /// Sign and determine if the current number of signatures is sufficient to send an event
+    pub fn check_signature(who: T::AccountId, exchangerate: u64, time: u64, extype: u64) -> Result {
         let sender = who;
 
         //查看该交易是否存在，没得话添加上去
         if !<NumberOfSignedContract<T>>::exists(time) {
-            <NumberOfSignedContract<T>>::insert(&time,0);
-            <AlreadySentTx<T>>::insert(&time,0);
+            <NumberOfSignedContract<T>>::insert(&time, 0);
+            <AlreadySentTx<T>>::insert(&time, 0);
         }
 
         //查看这个签名的是否重复发送交易 重复发送就滚粗
         let mut repeat_vec = Self::repeat(time);
-        ensure!(repeat_vec.contains(&sender),"repeat!");
+        ensure!(repeat_vec.contains(&sender), "repeat!");
 
         //查看交易是否已被发送
-        if 1 == Self::already_sent(time){
+        if 1 == Self::already_sent(time) {
             return Err("has been sent");
         }
 
         //增加一条记录 ->  交易 验证者 签名
-        <IdSignTxList<T>>::insert(time.clone(),(sender.clone(),exchangerate.clone()));
+        <IdSignTxList<T>>::insert(time.clone(), (sender.clone(), exchangerate.clone()));
 
         //增加一条记录 ->  交易 = vec of 验证者 签名
         let mut stored_vec = Self::all_list_b(time);
-        stored_vec.push((sender.clone(),exchangerate.clone()));
-        <IdSignTxListB<T>>::insert(time.clone(),stored_vec.clone());
+        stored_vec.push((sender.clone(), exchangerate.clone()));
+        <IdSignTxListB<T>>::insert(time.clone(), stored_vec.clone());
         repeat_vec.push(sender.clone());
-        <RepeatPrevent<T>>::insert(time.clone(),repeat_vec.clone());
+        <RepeatPrevent<T>>::insert(time.clone(), repeat_vec.clone());
 
         //其他验证？
         //Self::_verify(transcation)?;
 
         let numofsigned = Self::num_of_signed(&time);
-        let newnumofsigned = numofsigned.checked_add(1)
+        let newnumofsigned = numofsigned
+            .checked_add(1)
             .ok_or("Overflow adding a new sign to Tx")?;
-        <NumberOfSignedContract<T>>::insert(&time,newnumofsigned);
+        <NumberOfSignedContract<T>>::insert(&time, newnumofsigned);
         if newnumofsigned <= Self::min_signature() {
             return Err("not enough signatusign_and_checkre");
         }
 
         // Record the transaction and sending event
-        <AlreadySentTx<T>>::insert(&time,1);
+        <AlreadySentTx<T>>::insert(&time, 1);
         Self::deposit_event(RawEvent::Txisok(time));
 
-        Self::deposit_event(RawEvent::TranscationVerified(time,stored_vec));
+        Self::deposit_event(RawEvent::TranscationVerified(time, stored_vec));
         Ok(())
     }
 
@@ -160,50 +161,49 @@ impl<T: Trait> Module<T> {
     ///    bit          32   32   32     8          8    8
     ///    实现         ok   no   ok     ok         ok   ok
     ///           解析出   发送者id   汇率  该汇率时间  汇率类型（保留字段）
-    fn parse_data(message: Vec<u8>, signature: Vec<u8>) -> (T::AccountId, u64 , u64, u64){
-
+    fn parse_data(message: Vec<u8>, signature: Vec<u8>) -> (T::AccountId, u64, u64, u64) {
         let mut messagedrain = message.clone();
-        let hash:Vec<_> = messagedrain.drain(0..32).collect();
+        let hash: Vec<_> = messagedrain.drain(0..32).collect();
 
         let tx_hash: T::Hash = Decode::decode(&mut &hash.encode()[..]).unwrap();
 
-        let signature_hash: T::Hash =  Decode::decode(&mut &signature.encode()[..]).unwrap();
-        let id:Vec<_> = messagedrain.drain(32..64).collect();
+        let signature_hash: T::Hash = Decode::decode(&mut &signature.encode()[..]).unwrap();
+        let id: Vec<_> = messagedrain.drain(32..64).collect();
         let who: T::AccountId = Decode::decode(&mut &id.encode()[..]).unwrap();
 
-        let rate_vec:Vec<u8> = messagedrain.drain(32..40).collect();
+        let rate_vec: Vec<u8> = messagedrain.drain(32..40).collect();
         let mut rate: u64 = 0;
         let mut i = 0;
-        rate_vec.iter().for_each(|x|{
-            let exp = (*x as u64)^i;
-            rate = rate+exp;
-            i = i+1;
+        rate_vec.iter().for_each(|x| {
+            let exp = (*x as u64) ^ i;
+            rate = rate + exp;
+            i = i + 1;
         });
 
-        let time_vec:Vec<u8> = messagedrain.drain(32..40).collect();
+        let time_vec: Vec<u8> = messagedrain.drain(32..40).collect();
         let mut time: u64 = 0;
         let mut v = 0;
-        time_vec.iter().for_each(|x|{
-            let exp = (*x as u64)^v;
-            time = time+exp;
-            v = v+1;
+        time_vec.iter().for_each(|x| {
+            let exp = (*x as u64) ^ v;
+            time = time + exp;
+            v = v + 1;
         });
 
-        let type_vec:Vec<u8> = messagedrain.drain(32..40).collect();
+        let type_vec: Vec<u8> = messagedrain.drain(32..40).collect();
         let mut extype: u64 = 0;
         let mut q = 0;
-        type_vec.iter().for_each(|x|{
-            let exp = (*x as u64)^q;
-            extype = extype+exp;
-            q = q+1;
+        type_vec.iter().for_each(|x| {
+            let exp = (*x as u64) ^ q;
+            extype = extype + exp;
+            q = q + 1;
         });
         //ensure the signature is valid
-        let mut tx_hash_to_check:[u8;65] = [0;65];
+        let mut tx_hash_to_check: [u8; 65] = [0; 65];
         tx_hash_to_check.clone_from_slice(&hash);
-        let mut signature_hash_to_check:[u8;32] = [0;32];
+        let mut signature_hash_to_check: [u8; 32] = [0; 32];
         signature_hash_to_check.clone_from_slice(&signature);
-        <bank::Module<T>>::check_secp512(&tx_hash_to_check,&signature_hash_to_check).is_ok();
+        <bank::Module<T>>::check_secp512(&tx_hash_to_check, &signature_hash_to_check).is_ok();
 
-        return (who, rate, time,extype);
+        return (who, rate, time, extype);
     }
 }

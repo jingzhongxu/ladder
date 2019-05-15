@@ -1,8 +1,8 @@
-use web3::types::H256;
 use crate::events::*;
+use web3::types::H256;
 
 #[derive(Debug)]
-pub enum RelayType{
+pub enum RelayType {
     Ingress,
     Egress,
     Deposit,

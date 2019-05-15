@@ -16,14 +16,21 @@
 
 //! Substrate chain configurations.
 
-use primitives::{ed25519::Public as AuthorityId, ed25519, sr25519, Pair, crypto::{UncheckedInto, Ss58Codec}};
-use node_primitives::AccountId;
-use node_runtime::{ConsensusConfig, CouncilSeatsConfig, CouncilVotingConfig, DemocracyConfig,
-	SessionConfig, StakingConfig, StakerStatus, TimestampConfig, BalancesConfig, TreasuryConfig,
-	SudoConfig, ContractConfig, GrandpaConfig, IndicesConfig, Permill, Perbill, BankConfig};
-pub use node_runtime::GenesisConfig;
-use substrate_service;
 use hex_literal::hex;
+use node_primitives::AccountId;
+pub use node_runtime::GenesisConfig;
+use node_runtime::{
+    BalancesConfig, BankConfig, ConsensusConfig, ContractConfig, CouncilSeatsConfig,
+    CouncilVotingConfig, DemocracyConfig, GrandpaConfig, IndicesConfig, Perbill, Permill,
+    SessionConfig, StakerStatus, StakingConfig, SudoConfig, TimestampConfig, TreasuryConfig,
+};
+use primitives::{
+    crypto::{Ss58Codec, UncheckedInto},
+    ed25519,
+    ed25519::Public as AuthorityId,
+    sr25519, Pair,
+};
+use substrate_service;
 use substrate_telemetry::TelemetryEndpoints;
 
 const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -33,51 +40,67 @@ pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig>;
 
 /// Emberic Elm testnet generator
 pub fn emberic_elm_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_embedded(include_bytes!("../res/emberic-elm.json"))
+    ChainSpec::from_embedded(include_bytes!("../res/emberic-elm.json"))
 }
 
 fn staging_testnet_config_genesis() -> GenesisConfig {
-	// stash, controller, session-key
-	// generated with secret:
-	// for i in 1 2 3 4 ; do for j in stash controller; do subkey inspect "$secret"/elm/$j/$i; done; done
-	// and
-	// for i in 1 2 3 4 ; do for j in session; do subkey --ed25519 inspect "$secret"//elm//$j//$i; done; done
+    // stash, controller, session-key
+    // generated with secret:
+    // for i in 1 2 3 4 ; do for j in stash controller; do subkey inspect "$secret"/elm/$j/$i; done; done
+    // and
+    // for i in 1 2 3 4 ; do for j in session; do subkey --ed25519 inspect "$secret"//elm//$j//$i; done; done
 
+    let initial_authorities: Vec<(AccountId, AccountId, AuthorityId)> = vec![
+        (
+            hex!["72b52eb36f57b4bae756e4f064cf2e97df80d5f9c2f06ff31206a9be8c7b371c"]
+                .unchecked_into(), // 5Ef78yxqfaxVzrFCemYcSgwVtMV85ywykhLNm5WKTsZV22HZ
+            hex!["f0fae46aeb1a7ce8ca65f2bf885d09cd7f525bc00e9f6e73b5ea74402a2c4c19"]
+                .unchecked_into(), // 5HWfszmRMbzcjGmumYkkHtNJbi9y428JHgPeftVenvDgVUjh
+            hex!["e29624233b2cba342750217aa1883f6ec624134dd306efd230a988e5cb37d9ed"]
+                .unchecked_into(), // 5HBoHDLMR4jPwB6BCLyd2qfYBHytFhGs8fsa1h5PzhYd3WBq
+        ),
+        (
+            hex!["2254035a15597c1c19968be71593d2d0131e18ae90049e49178970f583ac3e17"]
+                .unchecked_into(), // 5CqiScHtxUatcQpck1tUks51o3pSjKsdCi2CLEHvMM7tc4Qi
+            hex!["eacb8edf6b05cb909a3d2bd8c6bffb13be3069ec6a69f1fa25e46103c5190267"]
+                .unchecked_into(), // 5HNZXnSgw21idbuegTC1J8Txkja97RPnnWkX68ewnrJDec2Z
+            hex!["e19b6b89729a41638e57dead9c993425287d386fa4963306b63f018732843495"]
+                .unchecked_into(), // 5HAWoPYfyYFHjacy8H2MDmHra7jVrPtBfFMPgd8CadpSqotL
+        ),
+        (
+            hex!["fe6211db8bd436e0d1cf37398eac655833fb47497e0f72ec00ab160c88966b7e"]
+                .unchecked_into(), // 5HpF9orzkmJ9ga3yrzNS9ckifxF3tbQjadEmCEiZJQ2fPgun
+            hex!["f06dd616c75cc4b2b01f325accf79b4f66a525ede0a59f48dcce2322b8798f5c"]
+                .unchecked_into(), // 5HVwyfB3LRsFXm7frEHDYyhwdpTYDRWxEqDKBYVyLi6DsPXq
+            hex!["1be80f2d4513a1fbe0e5163874f729baa5498486ac3914ac3fe2e1817d7b3f44"]
+                .unchecked_into(), // 5ChJ5wjqy2HY1LZw1EuQPGQEHgaS9sFu9yDD6KRX7CzwidTN
+        ),
+        (
+            hex!["60779817899466dbd476a0bc3a38cc64b7774d5fb646c3d291684171e67a0743"]
+                .unchecked_into(), // 5EFByrDMMa2m9hv4jrpykXaUyqjJ9XZH81kJE4JBa1Sz2psT
+            hex!["2a32622a5da54a80dc704a05f2d761c96d4748beedd83f61ca20a90f4a257678"]
+                .unchecked_into(), // 5D22qQJsLm2JUh8pEfrKahbkW21QQrHTkm4vUteei67fadLd
+            hex!["f54d9f5ed217ce07c0c5faa5277a0356f8bfd884d201f9d2c9e171568e1bf077"]
+                .unchecked_into(), // 5HcLeWrsfL9RuGp94pn1PeFxP7D1587TTEZzFYgFhKCPZLYh
+        ),
+    ];
+    // generated with secret: subkey inspect "$secret"/elm
+    let endowed_accounts: Vec<AccountId> = vec![
+        hex!["c224ccba63292331623bbf06a55f46607824c2580071a80a17c53cab2f999e2f"].unchecked_into(), //5GTG5We6twtoF6S4kUXJ77rWBsHBoHLS3JVf5KvvnxKdGQZr
+    ];
+    const MILLICENTS: u128 = 1_000_000_000;
+    const CENTS: u128 = 1_000 * MILLICENTS; // assume this is worth about a cent.
+    const DOLLARS: u128 = 100 * CENTS;
 
-	let initial_authorities: Vec<(AccountId, AccountId, AuthorityId)> = vec![(
-		hex!["72b52eb36f57b4bae756e4f064cf2e97df80d5f9c2f06ff31206a9be8c7b371c"].unchecked_into(), // 5Ef78yxqfaxVzrFCemYcSgwVtMV85ywykhLNm5WKTsZV22HZ
-		hex!["f0fae46aeb1a7ce8ca65f2bf885d09cd7f525bc00e9f6e73b5ea74402a2c4c19"].unchecked_into(), // 5HWfszmRMbzcjGmumYkkHtNJbi9y428JHgPeftVenvDgVUjh
-		hex!["e29624233b2cba342750217aa1883f6ec624134dd306efd230a988e5cb37d9ed"].unchecked_into(), // 5HBoHDLMR4jPwB6BCLyd2qfYBHytFhGs8fsa1h5PzhYd3WBq
-	),(
-		hex!["2254035a15597c1c19968be71593d2d0131e18ae90049e49178970f583ac3e17"].unchecked_into(), // 5CqiScHtxUatcQpck1tUks51o3pSjKsdCi2CLEHvMM7tc4Qi
-		hex!["eacb8edf6b05cb909a3d2bd8c6bffb13be3069ec6a69f1fa25e46103c5190267"].unchecked_into(), // 5HNZXnSgw21idbuegTC1J8Txkja97RPnnWkX68ewnrJDec2Z
-		hex!["e19b6b89729a41638e57dead9c993425287d386fa4963306b63f018732843495"].unchecked_into(), // 5HAWoPYfyYFHjacy8H2MDmHra7jVrPtBfFMPgd8CadpSqotL
-	),(
-		hex!["fe6211db8bd436e0d1cf37398eac655833fb47497e0f72ec00ab160c88966b7e"].unchecked_into(), // 5HpF9orzkmJ9ga3yrzNS9ckifxF3tbQjadEmCEiZJQ2fPgun
-		hex!["f06dd616c75cc4b2b01f325accf79b4f66a525ede0a59f48dcce2322b8798f5c"].unchecked_into(), // 5HVwyfB3LRsFXm7frEHDYyhwdpTYDRWxEqDKBYVyLi6DsPXq
-		hex!["1be80f2d4513a1fbe0e5163874f729baa5498486ac3914ac3fe2e1817d7b3f44"].unchecked_into(), // 5ChJ5wjqy2HY1LZw1EuQPGQEHgaS9sFu9yDD6KRX7CzwidTN
-	),(
-		hex!["60779817899466dbd476a0bc3a38cc64b7774d5fb646c3d291684171e67a0743"].unchecked_into(), // 5EFByrDMMa2m9hv4jrpykXaUyqjJ9XZH81kJE4JBa1Sz2psT
-		hex!["2a32622a5da54a80dc704a05f2d761c96d4748beedd83f61ca20a90f4a257678"].unchecked_into(), // 5D22qQJsLm2JUh8pEfrKahbkW21QQrHTkm4vUteei67fadLd
-		hex!["f54d9f5ed217ce07c0c5faa5277a0356f8bfd884d201f9d2c9e171568e1bf077"].unchecked_into(), // 5HcLeWrsfL9RuGp94pn1PeFxP7D1587TTEZzFYgFhKCPZLYh
-	)];
-	// generated with secret: subkey inspect "$secret"/elm
-	let endowed_accounts: Vec<AccountId> = vec![
-		hex!["c224ccba63292331623bbf06a55f46607824c2580071a80a17c53cab2f999e2f"].unchecked_into(), //5GTG5We6twtoF6S4kUXJ77rWBsHBoHLS3JVf5KvvnxKdGQZr
-	];
-	const MILLICENTS: u128 = 1_000_000_000;
-	const CENTS: u128 = 1_000 * MILLICENTS;    // assume this is worth about a cent.
-	const DOLLARS: u128 = 100 * CENTS;
+    const SECS_PER_BLOCK: u64 = 6;
+    const MINUTES: u64 = 60 / SECS_PER_BLOCK;
+    const HOURS: u64 = MINUTES * 60;
+    const DAYS: u64 = HOURS * 24;
 
-	const SECS_PER_BLOCK: u64 = 6;
-	const MINUTES: u64 = 60 / SECS_PER_BLOCK;
-	const HOURS: u64 = MINUTES * 60;
-	const DAYS: u64 = HOURS * 24;
+    const ENDOWMENT: u128 = 10_000_000 * DOLLARS;
+    const STASH: u128 = 100 * DOLLARS;
 
-	const ENDOWMENT: u128 = 10_000_000 * DOLLARS;
-	const STASH: u128 = 100 * DOLLARS;
-
-	GenesisConfig {
+    GenesisConfig {
 		consensus: Some(ConsensusConfig {
 			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),    // FIXME change once we have #1252
 			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
@@ -191,93 +214,97 @@ fn staging_testnet_config_genesis() -> GenesisConfig {
 
 /// Staging testnet config.
 pub fn staging_testnet_config() -> ChainSpec {
-	let boot_nodes = vec![];
-	ChainSpec::from_genesis(
-		"Staging Testnet",
-		"staging_testnet",
-		staging_testnet_config_genesis,
-		boot_nodes,
-		Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
-		None,
-		None,
-		None,
-	)
+    let boot_nodes = vec![];
+    ChainSpec::from_genesis(
+        "Staging Testnet",
+        "staging_testnet",
+        staging_testnet_config_genesis,
+        boot_nodes,
+        Some(TelemetryEndpoints::new(vec![(
+            STAGING_TELEMETRY_URL.to_string(),
+            0,
+        )])),
+        None,
+        None,
+        None,
+    )
 }
 
 /// Helper function to generate AccountId from seed
 pub fn get_account_id_from_seed(seed: &str) -> AccountId {
-	sr25519::Pair::from_string(&format!("//{}", seed), None)
-		.expect("static values are valid; qed")
-		.public()
+    sr25519::Pair::from_string(&format!("//{}", seed), None)
+        .expect("static values are valid; qed")
+        .public()
 }
 
 /// Helper function to generate AuthorityId from seed
 pub fn get_session_key_from_seed(seed: &str) -> AuthorityId {
-	ed25519::Pair::from_string(&format!("//{}", seed), None)
-		.expect("static values are valid; qed")
-		.public()
+    ed25519::Pair::from_string(&format!("//{}", seed), None)
+        .expect("static values are valid; qed")
+        .public()
 }
 
 /// Helper function to generate stash, controller and session key from seed
 pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, AuthorityId) {
-	(
-		get_account_id_from_seed(&format!("{}//stash", seed)),
-		get_account_id_from_seed(seed),
-		get_session_key_from_seed(seed)
-	)
+    (
+        get_account_id_from_seed(&format!("{}//stash", seed)),
+        get_account_id_from_seed(seed),
+        get_session_key_from_seed(seed),
+    )
 }
 
 /// Helper function to create GenesisConfig for testing
 pub fn testnet_genesis(
-	initial_authorities: Vec<(AccountId, AccountId, AuthorityId)>,
-	root_key: AccountId,
-	endowed_accounts: Option<Vec<AccountId>>,
-	enable_println: bool,
+    initial_authorities: Vec<(AccountId, AccountId, AuthorityId)>,
+    root_key: AccountId,
+    endowed_accounts: Option<Vec<AccountId>>,
+    enable_println: bool,
 ) -> GenesisConfig {
-	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
-		vec![
-			get_account_id_from_seed("Alice"),
-			get_account_id_from_seed("Bob"),
-			get_account_id_from_seed("Charlie"),
-			get_account_id_from_seed("Dave"),
-			get_account_id_from_seed("Eve"),
-			get_account_id_from_seed("Ferdie"),
-			get_account_id_from_seed("Alice//stash"),
-			get_account_id_from_seed("Bob//stash"),
-			get_account_id_from_seed("Charlie//stash"),
-			get_account_id_from_seed("Dave//stash"),
-			get_account_id_from_seed("Eve//stash"),
-			get_account_id_from_seed("Ferdie//stash"),
-			hex!("0bdb300d3f861c5f9dad27b4f2d37b613ab59c689f469cbb19b5844b75e02985").unchecked_into(),
-		]
-	});
+    let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
+        vec![
+            get_account_id_from_seed("Alice"),
+            get_account_id_from_seed("Bob"),
+            get_account_id_from_seed("Charlie"),
+            get_account_id_from_seed("Dave"),
+            get_account_id_from_seed("Eve"),
+            get_account_id_from_seed("Ferdie"),
+            get_account_id_from_seed("Alice//stash"),
+            get_account_id_from_seed("Bob//stash"),
+            get_account_id_from_seed("Charlie//stash"),
+            get_account_id_from_seed("Dave//stash"),
+            get_account_id_from_seed("Eve//stash"),
+            get_account_id_from_seed("Ferdie//stash"),
+            hex!("0bdb300d3f861c5f9dad27b4f2d37b613ab59c689f469cbb19b5844b75e02985")
+                .unchecked_into(),
+        ]
+    });
 
-	const STASH: u128 = 1 << 20;
-	const ENDOWMENT: u128 = 1 << 20;
+    const STASH: u128 = 1 << 20;
+    const ENDOWMENT: u128 = 1 << 20;
 
-	let mut contract_config = ContractConfig {
-		signed_claim_handicap: 2,
-		rent_byte_price: 4,
-		rent_deposit_offset: 1000,
-		storage_size_offset: 8,
-		surcharge_reward: 150,
-		tombstone_deposit: 16,
-		transaction_base_fee: 1,
-		transaction_byte_fee: 0,
-		transfer_fee: 0,
-		creation_fee: 0,
-		contract_fee: 21,
-		call_base_fee: 135,
-		create_base_fee: 175,
-		gas_price: 1,
-		max_depth: 1024,
-		block_gas_limit: 10_000_000,
-		current_schedule: Default::default(),
-	};
-	// this should only be enabled on development chains
-	contract_config.current_schedule.enable_println = enable_println;
+    let mut contract_config = ContractConfig {
+        signed_claim_handicap: 2,
+        rent_byte_price: 4,
+        rent_deposit_offset: 1000,
+        storage_size_offset: 8,
+        surcharge_reward: 150,
+        tombstone_deposit: 16,
+        transaction_base_fee: 1,
+        transaction_byte_fee: 0,
+        transfer_fee: 0,
+        creation_fee: 0,
+        contract_fee: 21,
+        call_base_fee: 135,
+        create_base_fee: 175,
+        gas_price: 1,
+        max_depth: 1024,
+        block_gas_limit: 10_000_000,
+        current_schedule: Default::default(),
+    };
+    // this should only be enabled on development chains
+    contract_config.current_schedule.enable_println = enable_println;
 
-	GenesisConfig {
+    GenesisConfig {
 		consensus: Some(ConsensusConfig {
 			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
 			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
@@ -369,36 +396,52 @@ pub fn testnet_genesis(
 }
 
 fn development_config_genesis() -> GenesisConfig {
-	testnet_genesis(
-		vec![
-			get_authority_keys_from_seed("Alice"),
-		],
-		get_account_id_from_seed("Alice"),
-		None,
-		true,
-	)
+    testnet_genesis(
+        vec![get_authority_keys_from_seed("Alice")],
+        get_account_id_from_seed("Alice"),
+        None,
+        true,
+    )
 }
 
 /// Development config (single validator Alice)
 pub fn development_config() -> ChainSpec {
-	ChainSpec::from_genesis("Development", "dev", development_config_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis(
+        "Development",
+        "dev",
+        development_config_genesis,
+        vec![],
+        None,
+        None,
+        None,
+        None,
+    )
 }
 
 fn local_testnet_genesis() -> GenesisConfig {
-	testnet_genesis(
-		vec![
-			get_authority_keys_from_seed("Alice"),
-			get_authority_keys_from_seed("Bob"),
-		],
-		get_account_id_from_seed("Alice"),
-		None,
-		false,
-	)
+    testnet_genesis(
+        vec![
+            get_authority_keys_from_seed("Alice"),
+            get_authority_keys_from_seed("Bob"),
+        ],
+        get_account_id_from_seed("Alice"),
+        None,
+        false,
+    )
 }
 
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> ChainSpec {
-	ChainSpec::from_genesis("Local Testnet", "local_testnet", local_testnet_genesis, vec![], None, None, None, None)
+    ChainSpec::from_genesis(
+        "Local Testnet",
+        "local_testnet",
+        local_testnet_genesis,
+        vec![],
+        None,
+        None,
+        None,
+        None,
+    )
 }
 
 // fn ladder_testnet_genesis() -> GenesisConfig {
@@ -436,26 +479,34 @@ pub fn local_testnet_config() -> ChainSpec {
 //     )
 // }
 
-
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use service_test;
-	use crate::service::Factory;
+    use super::*;
+    use crate::service::Factory;
+    use service_test;
 
-	fn local_testnet_genesis_instant() -> GenesisConfig {
-		let mut genesis = local_testnet_genesis();
-		genesis.timestamp = Some(TimestampConfig { minimum_period: 1 });
-		genesis
-	}
+    fn local_testnet_genesis_instant() -> GenesisConfig {
+        let mut genesis = local_testnet_genesis();
+        genesis.timestamp = Some(TimestampConfig { minimum_period: 1 });
+        genesis
+    }
 
-	/// Local testnet config (multivalidator Alice + Bob)
-	pub fn integration_test_config() -> ChainSpec {
-		ChainSpec::from_genesis("Integration Test", "test", local_testnet_genesis_instant, vec![], None, None, None, None)
-	}
+    /// Local testnet config (multivalidator Alice + Bob)
+    pub fn integration_test_config() -> ChainSpec {
+        ChainSpec::from_genesis(
+            "Integration Test",
+            "test",
+            local_testnet_genesis_instant,
+            vec![],
+            None,
+            None,
+            None,
+            None,
+        )
+    }
 
-	#[test]
-	fn test_connectivity() {
-		service_test::connectivity::<Factory>(integration_test_config());
-	}
+    #[test]
+    fn test_connectivity() {
+        service_test::connectivity::<Factory>(integration_test_config());
+    }
 }

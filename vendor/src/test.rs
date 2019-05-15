@@ -18,13 +18,13 @@ use futures;
 ///
 /// - mocking transports
 use jsonrpc_core;
+use message::RelayMessage;
 use serde_json;
 use std::cell::RefCell;
 use std::rc::Rc;
 use web3;
 use web3::Transport;
 use SuperviseClient;
-use message::RelayMessage;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RequestData {
@@ -67,9 +67,7 @@ impl Transport for MockTransport {
         method: &str,
         params: Vec<jsonrpc_core::Value>,
     ) -> (usize, jsonrpc_core::Call) {
-        let current_request_index = {
-            self.actual_requests.as_ref().borrow().len()
-        };
+        let current_request_index = { self.actual_requests.as_ref().borrow().len() };
         assert!(
             current_request_index < self.expected_requests.len(),
             "{} requests expected but at least one more request is being executed",
@@ -84,27 +82,26 @@ impl Transport for MockTransport {
             "invalid method called"
         );
         assert_eq!(
-            self.expected_requests[current_request_index].params,
-            params,
+            self.expected_requests[current_request_index].params, params,
             "invalid method params at request #{}",
             current_request_index
         );
-        self.actual_requests.as_ref().borrow_mut().push(
-            RequestData {
+        self.actual_requests
+            .as_ref()
+            .borrow_mut()
+            .push(RequestData {
                 method: method.to_string(),
                 params: params.clone(),
-            },
-        );
+            });
 
         let request = web3::helpers::build_request(1, method, params);
         (current_request_index + 1, request)
     }
 
     fn send(&self, _id: usize, _request: jsonrpc_core::Call) -> web3::Result<jsonrpc_core::Value> {
-        let current_request_index = {
-            self.actual_requests.as_ref().borrow().len()
-        };
-        let response = self.mock_responses
+        let current_request_index = { self.actual_requests.as_ref().borrow().len() };
+        let response = self
+            .mock_responses
             .iter()
             .nth(current_request_index - 1)
             .expect("missing response");
@@ -133,7 +130,7 @@ macro_rules! mock_transport {
 
 #[derive(Default)]
 pub struct MockClient {
-    data: Vec<RelayMessage>
+    data: Vec<RelayMessage>,
 }
 
 impl MockClient {
@@ -142,7 +139,7 @@ impl MockClient {
     }
 }
 impl SuperviseClient for MockClient {
-    fn submit(& self, tx: RelayMessage) {
+    fn submit(&self, tx: RelayMessage) {
         println!("{:?}", tx);
         // self.data.push(tx);
     }

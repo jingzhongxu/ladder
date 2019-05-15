@@ -1,14 +1,14 @@
-use futures::{Async, Poll, Stream};
-use web3::{Transport, types::Address};
-use log_stream::{LogStream, LogStreamOptions, ChainAlias};
 use super::error::{self, ResultExt};
-use std::time::Duration;
-use contracts;
 use super::SuperviseClient;
-use std::sync::Arc;
 use crate::events;
-use crate::message::{RelayMessage};
+use crate::message::RelayMessage;
 use crate::state::State;
+use contracts;
+use futures::{Async, Poll, Stream};
+use log_stream::{ChainAlias, LogStream, LogStreamOptions};
+use std::sync::Arc;
+use std::time::Duration;
+use web3::{types::Address, Transport};
 
 /// vendor will listen to all preset event.
 /// it submit event when poll finished, repeat event will be discarded.
@@ -23,7 +23,13 @@ pub struct Vendor<T: Transport, C: SuperviseClient> {
 }
 
 impl<T: Transport, C: SuperviseClient> Vendor<T, C> {
-    pub fn new(transport: &T, client: Arc<C>, state: State, contract_address: Address, chain: ChainAlias) -> Self {
+    pub fn new(
+        transport: &T,
+        client: Arc<C>,
+        state: State,
+        contract_address: Address,
+        chain: ChainAlias,
+    ) -> Self {
         Self {
             ingress_stream: LogStream::new(LogStreamOptions {
                 request_timeout: Duration::from_secs(30),
@@ -146,9 +152,10 @@ impl<T: Transport, C: SuperviseClient> Stream for Vendor<T, C> {
         loop {
             let mut changed = false;
             // get ingress logs
-            let ret = try_maybe_stream!(self.ingress_stream.poll().chain_err(
-                || "Vendor: Get poll log Failed.",
-            ));
+            let ret = try_maybe_stream!(self
+                .ingress_stream
+                .poll()
+                .chain_err(|| "Vendor: Get poll log Failed.",));
             if let Some(ret) = ret {
                 for log in &ret.logs {
                     let message = events::IngressEvent::from_log(log)?;
@@ -158,9 +165,10 @@ impl<T: Transport, C: SuperviseClient> Stream for Vendor<T, C> {
                 changed = true;
             }
 
-            let ret = try_maybe_stream!(self.egress_stream.poll().chain_err(
-                || "Vendor: Get poll log Failed.",
-            ));
+            let ret = try_maybe_stream!(self
+                .egress_stream
+                .poll()
+                .chain_err(|| "Vendor: Get poll log Failed.",));
             if let Some(ret) = ret {
                 for log in &ret.logs {
                     let message = events::EgressEvent::from_log(log)?;
@@ -170,9 +178,10 @@ impl<T: Transport, C: SuperviseClient> Stream for Vendor<T, C> {
                 changed = true;
             }
 
-            let ret = try_maybe_stream!(self.deposit_stream.poll().chain_err(
-                || "Vendor: Get poll log Failed.",
-            ));
+            let ret = try_maybe_stream!(self
+                .deposit_stream
+                .poll()
+                .chain_err(|| "Vendor: Get poll log Failed.",));
             if let Some(ret) = ret {
                 for log in &ret.logs {
                     let message = events::DepositEvent::from_log(log)?;
@@ -182,9 +191,10 @@ impl<T: Transport, C: SuperviseClient> Stream for Vendor<T, C> {
                 changed = true;
             }
 
-            let ret = try_maybe_stream!(self.withdraw_stream.poll().chain_err(
-                || "Vendor: Get poll log Failed.",
-            ));
+            let ret = try_maybe_stream!(self
+                .withdraw_stream
+                .poll()
+                .chain_err(|| "Vendor: Get poll log Failed.",));
             if let Some(ret) = ret {
                 for log in &ret.logs {
                     let message = events::WithdrawEvent::from_log(log)?;
@@ -194,9 +204,10 @@ impl<T: Transport, C: SuperviseClient> Stream for Vendor<T, C> {
                 changed = true;
             }
 
-            let ret = try_maybe_stream!(self.authority_stream.poll().chain_err(
-                || "Vendor: Get poll log Failed.",
-            ));
+            let ret = try_maybe_stream!(self
+                .authority_stream
+                .poll()
+                .chain_err(|| "Vendor: Get poll log Failed.",));
             if let Some(ret) = ret {
                 for log in &ret.logs {
                     let message = events::AuthorityEvent::from_log(log)?;
@@ -220,18 +231,17 @@ mod tests {
     use super::*;
     use contracts;
     use rustc_hex::FromHex;
-    use tokio_core::reactor::Core;
-    use web3::types::{Bytes, Log};
     use test::MockClient;
+    use tokio_core::reactor::Core;
     use utils::StreamExt;
+    use web3::types::{Bytes, Log};
 
     #[test]
     fn test_vendor_stream() {
         let ingress_topic = contracts::bridge::events::ingress::filter().topic0;
 
         let client = Arc::new(MockClient::default());
-        let transport =
-            mock_transport!(
+        let transport = mock_transport!(
             "eth_blockNumber" =>
                 req => json!([]),
                 res => json!("0x1011");

@@ -1,8 +1,8 @@
-use crate::error::{ResultExt, Error, ErrorKind};
-use std::path::{Path, PathBuf};
-use std::{fs};
-use std::io::{self, Read, Write};
+use crate::error::{Error, ErrorKind, ResultExt};
 use serde_json;
+use std::fs;
+use std::io::{self, Read, Write};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Default, Clone)]
 pub struct State {
@@ -44,7 +44,7 @@ impl StateStorage {
 
         let mut buffer = String::new();
         file.read_to_string(&mut buffer)?;
-        let state:State = serde_json::from_str(&buffer).unwrap_or(State::default());
+        let state: State = serde_json::from_str(&buffer).unwrap_or(State::default());
         Ok(Self {
             file_path: file_path.to_path_buf(),
             state: state,
@@ -63,7 +63,7 @@ mod tests {
         // TODO
         let tmp_dir = TempDir::new("example").unwrap();
         let file_path = tmp_dir.path().join("test.json");
-        
+
         let mut tmp_file = File::create(file_path).unwrap();
         let mut ss = StateStorage::load(file_path).unwrap();
         println!("{:?}", ss.state);

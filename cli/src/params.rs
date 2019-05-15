@@ -1,5 +1,5 @@
-use structopt::{StructOpt, clap::App};
-use cli::{GetLogFilter, AugmentClap};
+use cli::{AugmentClap, GetLogFilter};
+use structopt::{clap::App, StructOpt};
 use vendor::RunStrategy;
 
 #[derive(Debug, StructOpt, Clone, Default)]
@@ -13,15 +13,15 @@ pub struct VendorCmd {
 }
 
 impl GetLogFilter for VendorCmd {
-	fn get_log_filter(&self) -> Option<String> {
-		None
-	}
+    fn get_log_filter(&self) -> Option<String> {
+        None
+    }
 }
 
 impl AugmentClap for VendorCmd {
-	fn augment_clap<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
-		app
-	}
+    fn augment_clap<'a, 'b>(app: App<'a, 'b>) -> App<'a, 'b> {
+        app
+    }
 }
 
 impl Into<RunStrategy> for VendorCmd {

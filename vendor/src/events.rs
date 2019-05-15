@@ -1,14 +1,14 @@
-use contracts;
 use crate::error::Error;
-use web3::types::{Address, H256, U256, Log};
 use crate::utils::IntoRawLog;
+use contracts;
 use std::str::FromStr;
+use web3::types::{Address, Log, H256, U256};
 
 pub const ETH_COIN: &str = "0000000000000000000000000000000000000000000000000000000000000001";
 pub const MESSAGE_LENGTH: usize = 116;
 pub const BANKER_LENGTH: usize = 116;
 pub const AUTHORITY_MINIMUM_LENGTH: usize = 72;
-pub const ORACLE_LENTH: usize = 116;     // 8 8
+pub const ORACLE_LENTH: usize = 116; // 8 8
 
 #[derive(Debug)]
 pub struct IngressEvent {
@@ -200,8 +200,6 @@ pub fn u32_to_array(data: u32) -> [u8; 4] {
     bytes
 }
 
-
-
 #[derive(Debug)]
 pub struct AuthorityEvent {
     pub coin: H256,
@@ -240,13 +238,16 @@ impl AuthorityEvent {
     */
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         if bytes.len() < AUTHORITY_MINIMUM_LENGTH {
-            bail!("`bytes`.len() must be more than {}", AUTHORITY_MINIMUM_LENGTH);
+            bail!(
+                "`bytes`.len() must be more than {}",
+                AUTHORITY_MINIMUM_LENGTH
+            );
         }
         let mut index: usize = 0;
         let coin: H256 = bytes[index..(index + 32)].into();
         index += 32;
 
-        let mut tmp:[u8; 4] = [0u8;4];
+        let mut tmp: [u8; 4] = [0u8; 4];
         tmp.copy_from_slice(&bytes[index..(index + 4)]);
         let last_len = array_to_u32(tmp);
         index += 4;
@@ -262,11 +263,13 @@ impl AuthorityEvent {
         let next_len = array_to_u32(tmp);
         index += 4;
 
-        let next: Vec<Address> = (0..next_len).map(|i| {
-            let address: Address = bytes[index..(index + 20)].into();
-            index += 20;
-            address
-        }).collect();
+        let next: Vec<Address> = (0..next_len)
+            .map(|i| {
+                let address: Address = bytes[index..(index + 20)].into();
+                index += 20;
+                address
+            })
+            .collect();
 
         let tx_hash = bytes[index..(index + 32)].into();
         Ok(Self {
@@ -280,8 +283,10 @@ impl AuthorityEvent {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let capacity = AUTHORITY_MINIMUM_LENGTH + (self.last_len as usize) * 20 + (self.next_len as usize) * 20;
-        let mut result:Vec<u8> = Vec::with_capacity(capacity);
+        let capacity = AUTHORITY_MINIMUM_LENGTH
+            + (self.last_len as usize) * 20
+            + (self.next_len as usize) * 20;
+        let mut result: Vec<u8> = Vec::with_capacity(capacity);
         let mut index = 0;
         result[index..(index + 32)].copy_from_slice(&self.coin.0[..]);
         index += 32;
@@ -293,7 +298,7 @@ impl AuthorityEvent {
         }
         result[index..(index + 4)].copy_from_slice(&u32_to_array(self.next_len));
         index += 4;
-        for i in 0..self.next_len as usize{
+        for i in 0..self.next_len as usize {
             result[index..(index + 20)].copy_from_slice(&self.next[i].0[..]);
             index += 20;
         }
@@ -304,30 +309,28 @@ impl AuthorityEvent {
 
 #[derive(Debug)]
 pub struct ExchangeRateEvent {
-    pub pair: u64,                //组合类型 1-ETHUSD  2-BITUSD  ……
-    pub time: u64,                //该汇率的时间
+    pub pair: u64, //组合类型 1-ETHUSD  2-BITUSD  ……
+    pub time: u64, //该汇率的时间
     pub rate: u64,
     pub tx_hash: H256,
 }
 
-
-impl ExchangeRateEvent{
+impl ExchangeRateEvent {
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut result = vec![0u8; 24];
         result[0..8].copy_from_slice(&u64_to_array(self.rate));
         result[8..16].copy_from_slice(&u64_to_array(self.time));
         result[16..24].copy_from_slice(&u64_to_array(self.pair));
 
-       result[24..56].copy_from_slice(&self.tx_hash.0[..]);
+        result[24..56].copy_from_slice(&self.tx_hash.0[..]);
         return result;
     }
-
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         if bytes.len() != 56 {
             bail!("`bytes`.len() must be {}", 56);
         }
-        let mut tmp:[u8; 8] = [0u8;8];
+        let mut tmp: [u8; 8] = [0u8; 8];
 
         let raw_pair = tmp.copy_from_slice(&bytes[0..8]);
         let pair = array_to_u64(tmp);
@@ -359,16 +362,16 @@ pub fn array_to_u64(arr: [u8; 8]) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustc_hex::{ToHex, FromHex};
-    use web3::types::{Bytes};
+    use rustc_hex::{FromHex, ToHex};
+    use web3::types::Bytes;
 
     fn prepare_data() -> (H256, Address, U256, H256, &'static str) {
         let tag: H256 = "0x0000000000000000000000000000000000000000000000000000000000000002".into();
         let recipient: Address = "0x74241db5f3ebaeecf9506e4ae988186093341604".into();
         // 0x00000000000000000000000000000000000000000000000000000000054c5638
         let value: U256 = U256::from_dec_str("88888888").unwrap();
-        let tx_hash: H256 = "0x1045bfe274b88120a6b1e5d01b5ec00ab5d01098346e90e7c7a3c9b8f0181c80"
-            .into();
+        let tx_hash: H256 =
+            "0x1045bfe274b88120a6b1e5d01b5ec00ab5d01098346e90e7c7a3c9b8f0181c80".into();
         let bytes_str: &'static str = "000000000000000000000000000000000000000000000000000000000000000274241db5f3ebaeecf9506e4ae98818609334160400000000000000000000000000000000000000000000000000000000054c56381045bfe274b88120a6b1e5d01b5ec00ab5d01098346e90e7c7a3c9b8f0181c80";
         (tag, recipient, value, tx_hash, bytes_str)
     }
@@ -391,8 +394,7 @@ mod tests {
     fn test_message_from_bytes() {
         let (tag, recipient, value, tx_hash, bytes_str) = prepare_data();
 
-        let message = IngressEvent::from_bytes(bytes_str.from_hex().unwrap().as_slice())
-            .unwrap();
+        let message = IngressEvent::from_bytes(bytes_str.from_hex().unwrap().as_slice()).unwrap();
         assert_eq!(message.tag, tag);
         assert_eq!(message.recipient, recipient);
         assert_eq!(message.value, value);

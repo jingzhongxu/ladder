@@ -1,8 +1,8 @@
+use ethabi;
+use serde_json;
 use std::io;
 use tokio_timer::{TimeoutError, TimerError};
 use web3;
-use ethabi;
-use serde_json;
 
 error_chain! {
     types {

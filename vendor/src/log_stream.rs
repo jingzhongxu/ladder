@@ -10,7 +10,7 @@ use tokio_timer::{Timeout, Timer};
 use web3;
 use web3::api::Namespace;
 use web3::helpers::CallFuture;
-use web3::types::{Address, FilterBuilder, Log, H256, Filter};
+use web3::types::{Address, Filter, FilterBuilder, Log, H256};
 use web3::Transport;
 
 pub fn abos_logs<T: Transport>(transport: &T, filter: Filter) -> CallFuture<Vec<Log>, T::Out> {
@@ -31,12 +31,9 @@ fn filter_to_builder(filter: &ethabi::TopicFilter, address: Address) -> FilterBu
     let t1 = ethabi_topic_to_web3(&filter.topic1);
     let t2 = ethabi_topic_to_web3(&filter.topic2);
     let t3 = ethabi_topic_to_web3(&filter.topic3);
-    FilterBuilder::default().address(vec![address]).topics(
-        t0,
-        t1,
-        t2,
-        t3,
-    )
+    FilterBuilder::default()
+        .address(vec![address])
+        .topics(t0, t1, t2, t3)
 }
 
 /// options for creating a `LogStream`. passed to `LogStream::new`
@@ -95,9 +92,8 @@ impl<T: Transport> LogStream<T> {
     pub fn new(options: LogStreamOptions<T>) -> Self {
         let timer = Timer::default();
 
-        let topic = ethabi_topic_to_web3(&options.filter.topic0).expect(
-            "filter must have at least 1 topic. q.e.d.",
-        );
+        let topic = ethabi_topic_to_web3(&options.filter.topic0)
+            .expect("filter must have at least 1 topic. q.e.d.");
         let filter_builder = filter_to_builder(&options.filter, options.contract_address);
 
         let block_number_stream_options = BlockNumberStreamOptions {
@@ -130,13 +126,15 @@ impl<T: Transport> Stream for LogStream<T> {
         loop {
             let (next_state, value_to_yield) = match self.state {
                 State::AwaitBlockNumber => {
-                    let last_block = try_stream!(self.block_number_stream.poll().chain_err(
-                        || "LogStream: fetching of last confirmed block number failed",
-                    ));
+                    let last_block =
+                        try_stream!(self.block_number_stream.poll().chain_err(|| {
+                            "LogStream: fetching of last confirmed block number failed"
+                        },));
                     debug!("LogStream: fetched confirmed block number {}", last_block);
 
                     let from = self.last_checked_block + 1;
-                    let filter = self.filter_builder
+                    let filter = self
+                        .filter_builder
                         .clone()
                         .from_block(from.into())
                         .to_block(last_block.into())
@@ -147,8 +145,7 @@ impl<T: Transport> Stream for LogStream<T> {
                     };
                     debug!(
                         "LogStream: fetching logs in blocks {} to {}",
-                        from,
-                        last_block
+                        from, last_block
                     );
 
                     let next_state = State::AwaitLogs {
@@ -164,9 +161,9 @@ impl<T: Transport> Stream for LogStream<T> {
                     from,
                     to,
                 } => {
-                    let logs = try_ready!(future.poll().chain_err(
-                        || "LogStream: polling web3 logs failed",
-                    ));
+                    let logs = try_ready!(future
+                        .poll()
+                        .chain_err(|| "LogStream: polling web3 logs failed",));
                     info!(
                         "LogStream (topic: {:?}): fetched {} logs from block {} to block {}",
                         self.topic,
@@ -202,8 +199,7 @@ mod tests {
     fn test_log_stream_twice_no_logs() {
         let deposit_topic = contracts::bridge::events::ingress::filter().topic0;
 
-        let transport =
-            mock_transport!(
+        let transport = mock_transport!(
             "eth_blockNumber" =>
                 req => json!([]),
                 res => json!("0x1011");

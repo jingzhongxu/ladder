@@ -1,4 +1,5 @@
 use crate::error;
+use error::ResultExt;
 use futures::future::FromErr;
 use futures::{Async, Future, Poll, Stream};
 use std::time::Duration;
@@ -8,7 +9,6 @@ use web3::api::Namespace;
 use web3::helpers::CallFuture;
 use web3::types::U256;
 use web3::Transport;
-use error::ResultExt;
 
 /// Block Number Stream state.
 enum State<T: Transport> {
@@ -60,9 +60,10 @@ impl<T: Transport> Stream for BlockNumberStream<T> {
             let (next_state, value_to_yield) = match self.state {
                 State::AwaitInterval => {
                     // wait until `interval` has passed
-                    let _ = try_stream!(self.poll_interval.poll().chain_err(|| {
-                        format!("BlockNumberStream polling interval failed",)
-                    }));
+                    let _ = try_stream!(self
+                        .poll_interval
+                        .poll()
+                        .chain_err(|| { format!("BlockNumberStream polling interval failed",) }));
                     let future = web3::api::Eth::new(&self.transport).block_number();
                     let next_state = State::AwaitBlockNumber(
                         self.timer.timeout(future.from_err(), self.request_timeout),
@@ -70,9 +71,10 @@ impl<T: Transport> Stream for BlockNumberStream<T> {
                     (next_state, None)
                 }
                 State::AwaitBlockNumber(ref mut future) => {
-                    let last_block = try_ready!(future.poll().chain_err(
-                        || "BlockNumberStream: fetching of last block number failed",
-                    )).as_u64();
+                    let last_block = try_ready!(future
+                        .poll()
+                        .chain_err(|| "BlockNumberStream: fetching of last block number failed",))
+                    .as_u64();
                     debug!(
                         "BlockNumberStream: fetched last block number {}",
                         last_block
@@ -108,8 +110,7 @@ mod tests {
 
     #[test]
     fn test_block_number_stream() {
-        let transport =
-            mock_transport!(
+        let transport = mock_transport!(
             "eth_blockNumber" =>
                 req => json!([]),
                 res => json!("0x1011");

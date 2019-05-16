@@ -84,13 +84,13 @@ where
     cli::parse_and_execute::<service::Factory, VendorCmd, VendorCmd, _, _, _, _, _>(
         load_spec,
         &version,
-        "substrate-node",
+        "ladder-node",
         args,
         exit,
         |exit, _cli_args, custom_args, mut config| {
             info!("{}", version.name);
             info!("  version {}", config.full_version());
-            info!("  by Parity Technologies, 2017-2019");
+            info!("  by Ladder Network, 2017-2019");
             info!("Chain specification: {}", config.chain_spec.name());
             info!("Node name: {}", config.name);
             info!("Roles: {:?}", config.roles);

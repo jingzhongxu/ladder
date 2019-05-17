@@ -288,7 +288,7 @@ fn ladder_testnet_genesis() -> GenesisConfig {
     const CENTS: u128 = 1_000 * MILLICENTS; // assume this is worth about a cent.
     const DOLLARS: u128 = 100 * CENTS;
 
-    const SECS_PER_BLOCK: u64 = 6;
+    const SECS_PER_BLOCK: u64 = 8;
     const MINUTES: u64 = 60 / SECS_PER_BLOCK;
     const HOURS: u64 = MINUTES * 60;
     const DAYS: u64 = HOURS * 24;
@@ -329,11 +329,11 @@ fn ladder_testnet_genesis() -> GenesisConfig {
 			offline_slash: Perbill::from_billionths(1_000_000),
 			session_reward: Perbill::from_billionths(2_065),
 			current_session_reward: 0,
-			validator_count: 7,
+			validator_count: 3,
 			sessions_per_era: 12,
 			bonding_duration: 12,
 			offline_slash_grace: 4,
-			minimum_validator_count: 4,
+			minimum_validator_count: 3,
 			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
 		}),
@@ -411,7 +411,7 @@ fn ladder_testnet_genesis() -> GenesisConfig {
 pub fn ladder_testnet_config() -> ChainSpec {
     ChainSpec::from_genesis(
         "Ladder Testnet v0.4.0",
-        "Ladder Testnet v0.4.0",
+        "Ladder Testnet",
         ladder_testnet_genesis,
         vec![],
         // TODO, remove it when substrate upgrade to latest version. test that hasn't this problem.

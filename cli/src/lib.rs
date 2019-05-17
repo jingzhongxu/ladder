@@ -39,20 +39,17 @@ pub enum ChainSpec {
     Development,
     /// Whatever the current runtime is, with simple Alice/Bob auths.
     LocalTestnet,
-    /// The Emberic Elm testnet.
-    EmbericElm,
-    /// Whatever the current runtime is with the "global testnet" defaults.
-    StagingTestnet,
+    /// Ladder testnet.
+    LadderTestnet,
 }
 
 /// Get a chain config from a spec setting.
 impl ChainSpec {
     pub(crate) fn load(self) -> Result<chain_spec::ChainSpec, String> {
         Ok(match self {
-            ChainSpec::EmbericElm => chain_spec::emberic_elm_config()?,
             ChainSpec::Development => chain_spec::development_config(),
             ChainSpec::LocalTestnet => chain_spec::local_testnet_config(),
-            ChainSpec::StagingTestnet => chain_spec::staging_testnet_config(),
+            ChainSpec::LadderTestnet => chain_spec::ladder_testnet_config(),
         })
     }
 
@@ -60,8 +57,7 @@ impl ChainSpec {
         match s {
             "dev" => Some(ChainSpec::Development),
             "local" => Some(ChainSpec::LocalTestnet),
-            "" | "elm" | "emberic-elm" => Some(ChainSpec::EmbericElm),
-            "staging" => Some(ChainSpec::StagingTestnet),
+            "" | "ladder" => Some(ChainSpec::LadderTestnet),
             _ => None,
         }
     }

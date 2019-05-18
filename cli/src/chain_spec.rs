@@ -38,198 +38,6 @@ const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 /// Specialized `ChainSpec`.
 pub type ChainSpec = substrate_service::ChainSpec<GenesisConfig>;
 
-/// Emberic Elm testnet generator
-pub fn emberic_elm_config() -> Result<ChainSpec, String> {
-    ChainSpec::from_embedded(include_bytes!("../res/emberic-elm.json"))
-}
-
-fn staging_testnet_config_genesis() -> GenesisConfig {
-    // stash, controller, session-key
-    // generated with secret:
-    // for i in 1 2 3 4 ; do for j in stash controller; do subkey inspect "$secret"/elm/$j/$i; done; done
-    // and
-    // for i in 1 2 3 4 ; do for j in session; do subkey --ed25519 inspect "$secret"//elm//$j//$i; done; done
-
-    let initial_authorities: Vec<(AccountId, AccountId, AuthorityId)> = vec![
-        (
-            hex!["72b52eb36f57b4bae756e4f064cf2e97df80d5f9c2f06ff31206a9be8c7b371c"]
-                .unchecked_into(), // 5Ef78yxqfaxVzrFCemYcSgwVtMV85ywykhLNm5WKTsZV22HZ
-            hex!["f0fae46aeb1a7ce8ca65f2bf885d09cd7f525bc00e9f6e73b5ea74402a2c4c19"]
-                .unchecked_into(), // 5HWfszmRMbzcjGmumYkkHtNJbi9y428JHgPeftVenvDgVUjh
-            hex!["e29624233b2cba342750217aa1883f6ec624134dd306efd230a988e5cb37d9ed"]
-                .unchecked_into(), // 5HBoHDLMR4jPwB6BCLyd2qfYBHytFhGs8fsa1h5PzhYd3WBq
-        ),
-        (
-            hex!["2254035a15597c1c19968be71593d2d0131e18ae90049e49178970f583ac3e17"]
-                .unchecked_into(), // 5CqiScHtxUatcQpck1tUks51o3pSjKsdCi2CLEHvMM7tc4Qi
-            hex!["eacb8edf6b05cb909a3d2bd8c6bffb13be3069ec6a69f1fa25e46103c5190267"]
-                .unchecked_into(), // 5HNZXnSgw21idbuegTC1J8Txkja97RPnnWkX68ewnrJDec2Z
-            hex!["e19b6b89729a41638e57dead9c993425287d386fa4963306b63f018732843495"]
-                .unchecked_into(), // 5HAWoPYfyYFHjacy8H2MDmHra7jVrPtBfFMPgd8CadpSqotL
-        ),
-        (
-            hex!["fe6211db8bd436e0d1cf37398eac655833fb47497e0f72ec00ab160c88966b7e"]
-                .unchecked_into(), // 5HpF9orzkmJ9ga3yrzNS9ckifxF3tbQjadEmCEiZJQ2fPgun
-            hex!["f06dd616c75cc4b2b01f325accf79b4f66a525ede0a59f48dcce2322b8798f5c"]
-                .unchecked_into(), // 5HVwyfB3LRsFXm7frEHDYyhwdpTYDRWxEqDKBYVyLi6DsPXq
-            hex!["1be80f2d4513a1fbe0e5163874f729baa5498486ac3914ac3fe2e1817d7b3f44"]
-                .unchecked_into(), // 5ChJ5wjqy2HY1LZw1EuQPGQEHgaS9sFu9yDD6KRX7CzwidTN
-        ),
-        (
-            hex!["60779817899466dbd476a0bc3a38cc64b7774d5fb646c3d291684171e67a0743"]
-                .unchecked_into(), // 5EFByrDMMa2m9hv4jrpykXaUyqjJ9XZH81kJE4JBa1Sz2psT
-            hex!["2a32622a5da54a80dc704a05f2d761c96d4748beedd83f61ca20a90f4a257678"]
-                .unchecked_into(), // 5D22qQJsLm2JUh8pEfrKahbkW21QQrHTkm4vUteei67fadLd
-            hex!["f54d9f5ed217ce07c0c5faa5277a0356f8bfd884d201f9d2c9e171568e1bf077"]
-                .unchecked_into(), // 5HcLeWrsfL9RuGp94pn1PeFxP7D1587TTEZzFYgFhKCPZLYh
-        ),
-    ];
-    // generated with secret: subkey inspect "$secret"/elm
-    let endowed_accounts: Vec<AccountId> = vec![
-        hex!["c224ccba63292331623bbf06a55f46607824c2580071a80a17c53cab2f999e2f"].unchecked_into(), //5GTG5We6twtoF6S4kUXJ77rWBsHBoHLS3JVf5KvvnxKdGQZr
-    ];
-    const MILLICENTS: u128 = 1_000_000_000;
-    const CENTS: u128 = 1_000 * MILLICENTS; // assume this is worth about a cent.
-    const DOLLARS: u128 = 100 * CENTS;
-
-    const SECS_PER_BLOCK: u64 = 6;
-    const MINUTES: u64 = 60 / SECS_PER_BLOCK;
-    const HOURS: u64 = MINUTES * 60;
-    const DAYS: u64 = HOURS * 24;
-
-    const ENDOWMENT: u128 = 10_000_000 * DOLLARS;
-    const STASH: u128 = 100 * DOLLARS;
-
-    GenesisConfig {
-		consensus: Some(ConsensusConfig {
-			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),    // FIXME change once we have #1252
-			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
-		}),
-		system: None,
-		balances: Some(BalancesConfig {
-			transaction_base_fee: 1 * CENTS,
-			transaction_byte_fee: 10 * MILLICENTS,
-			balances: endowed_accounts.iter().cloned()
-				.map(|k| (k, ENDOWMENT))
-				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
-				.collect(),
-			existential_deposit: 1 * DOLLARS,
-			transfer_fee: 1 * CENTS,
-			creation_fee: 1 * CENTS,
-			vesting: vec![],
-		}),
-		indices: Some(IndicesConfig {
-			ids: endowed_accounts.iter().cloned()
-				.chain(initial_authorities.iter().map(|x| x.0.clone()))
-				.collect::<Vec<_>>(),
-		}),
-		session: Some(SessionConfig {
-			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-			session_length: 5 * MINUTES,
-			keys: initial_authorities.iter().map(|x| (x.1.clone(), x.2.clone())).collect::<Vec<_>>(),
-		}),
-		staking: Some(StakingConfig {
-			current_era: 0,
-			offline_slash: Perbill::from_billionths(1_000_000),
-			session_reward: Perbill::from_billionths(2_065),
-			current_session_reward: 0,
-			validator_count: 7,
-			sessions_per_era: 12,
-			bonding_duration: 12,
-			offline_slash_grace: 4,
-			minimum_validator_count: 4,
-			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-		}),
-		democracy: Some(DemocracyConfig {
-			launch_period: 10 * MINUTES,    // 1 day per public referendum
-			voting_period: 10 * MINUTES,    // 3 days to discuss & vote on an active referendum
-			minimum_deposit: 50 * DOLLARS,    // 12000 as the minimum deposit for a referendum
-			public_delay: 10 * MINUTES,
-			max_lock_periods: 6,
-		}),
-		council_seats: Some(CouncilSeatsConfig {
-			active_council: vec![],
-			candidacy_bond: 10 * DOLLARS,
-			voter_bond: 1 * DOLLARS,
-			present_slash_per_voter: 1 * CENTS,
-			carry_count: 6,
-			presentation_duration: 1 * DAYS,
-			approval_voting_period: 2 * DAYS,
-			term_duration: 28 * DAYS,
-			desired_seats: 0,
-			inactive_grace_period: 1,    // one additional vote should go by before an inactive voter can be reaped.
-		}),
-		council_voting: Some(CouncilVotingConfig {
-			cooloff_period: 4 * DAYS,
-			voting_period: 1 * DAYS,
-			enact_delay_period: 0,
-		}),
-		timestamp: Some(TimestampConfig {
-			minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
-		}),
-		treasury: Some(TreasuryConfig {
-			proposal_bond: Permill::from_percent(5),
-			proposal_bond_minimum: 1 * DOLLARS,
-			spend_period: 1 * DAYS,
-			burn: Permill::from_percent(50),
-		}),
-		contract: Some(ContractConfig {
-			signed_claim_handicap: 2,
-			rent_byte_price: 4,
-			rent_deposit_offset: 1000,
-			storage_size_offset: 8,
-			surcharge_reward: 150,
-			tombstone_deposit: 16,
-			transaction_base_fee: 1 * CENTS,
-			transaction_byte_fee: 10 * MILLICENTS,
-			transfer_fee: 1 * CENTS,
-			creation_fee: 1 * CENTS,
-			contract_fee: 1 * CENTS,
-			call_base_fee: 1000,
-			create_base_fee: 1000,
-			gas_price: 1 * MILLICENTS,
-			max_depth: 1024,
-			block_gas_limit: 10_000_000,
-			current_schedule: Default::default(),
-		}),
-		sudo: Some(SudoConfig {
-			key: endowed_accounts[0].clone(),
-		}),
-		grandpa: Some(GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.2.clone(), 1)).collect(),
-		}),
-		bank: Some(BankConfig{
-			enable_record: true,
-			session_length: 10,
-			reward_session_value: vec![1000,5000,60000,80000],
-			reward_session_factor: vec![1,2,3,4],
-			reward_balance_value: vec![1000,5000,60000,80000],
-			reward_balance_factor: vec![1,2,3,4],
-			total_despositing_balance:0 ,
-		})
-
-	}
-}
-
-/// Staging testnet config.
-pub fn staging_testnet_config() -> ChainSpec {
-    let boot_nodes = vec![];
-    ChainSpec::from_genesis(
-        "Staging Testnet",
-        "staging_testnet",
-        staging_testnet_config_genesis,
-        boot_nodes,
-        Some(TelemetryEndpoints::new(vec![(
-            STAGING_TELEMETRY_URL.to_string(),
-            0,
-        )])),
-        None,
-        None,
-        None,
-    )
-}
-
 /// Helper function to generate AccountId from seed
 pub fn get_account_id_from_seed(seed: &str) -> AccountId {
     sr25519::Pair::from_string(&format!("//{}", seed), None)
@@ -444,40 +252,288 @@ pub fn local_testnet_config() -> ChainSpec {
     )
 }
 
-// fn ladder_testnet_genesis() -> GenesisConfig {
-//     let alice_stash   = sr25519::Public::from_ss58check("5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ").unwrap();
-//     let alice_control = sr25519::Public::from_ss58check("5GoKvZWG5ZPYL1WUovuHW3zJBWBP5eT8CbqjdRY4Q6iMaDtZ").unwrap();
-//     let bob_stash   = sr25519::Public::from_ss58check("5Gw3s7q4QLkSWwknsiPtjujPv3XM4Trxi5d4PgKMMk3gfGTE").unwrap();
-//     let bob_control = sr25519::Public::from_ss58check("5Gw3s7q4QLkSWwknsiPtjujPv3XM4Trxi5d4PgKMMk3gfGTE").unwrap();
-//     let eve_stash   = sr25519::Public::from_ss58check("5CNLHq4doqBbrrxLCxAakEgaEvef5tjSrN7QqJwcWzNd7W7k").unwrap();
-//     let eve_control = sr25519::Public::from_ss58check("5CNLHq4doqBbrrxLCxAakEgaEvef5tjSrN7QqJwcWzNd7W7k").unwrap();
+fn ladder_testnet_genesis() -> GenesisConfig {
+    // stash , control, session
+    let initial_authorities: Vec<(AccountId, AccountId, AuthorityId)> = vec![
+        (
+            hex!["ae626c4207a4fcd0360862172347e5078ee8c249649f7a0a1b30e8375ba35d0f"]
+                .unchecked_into(), // 5G1MRi1tTL3yT7sLxote4X71mrrknmD1V4wqV46cXfmvSXb6
+            hex!["003911b2203ab1d9f8d0c800b3918c9a08b96a760a3848e69cf0b766498fee4a"]
+                .unchecked_into(), // 5C4zowsXUqg6qA3ggBjUQjcSnWc3Di95PRthTKhcJ4fkKx65
+            hex!["ab7abe64574ebdc8360bb5845fd39b6c7f509d4d6a6c53cf3e378b1e729a0165"]
+                .unchecked_into(), // 5FWLaBimAiD5gdpZWsCBCSVi8gdP6pFpCSpuauEAbWw7y7HU
+        ),
+        (
+            hex!["541339a3f3406f14912f2c493d04d8863c1eaeaff06e1a03d7de82ee7d89aa7f"]
+                .unchecked_into(), // 5DxwbCqB2sE72BG8oiP3seCAzLR8t9rAZaKYbQnd7Yj4srmW
+            hex!["30891634febca7e0aef901470aed018c1237f7b64a994e6ad2a9e2e4eed8476a"]
+                .unchecked_into(), // 5DALsvrp2uhBMwgaBKGKRXgcqa1nTE5cHHNyXsi8JU7BqRAC
+            hex!["35294d534d5163927fb4e622ff6fb9dc98c819fb4356a99902dc16f8f3c13176"]
+                .unchecked_into(), // 5DGQfV2rtWo1iCoT7t5yapBz9ww6CrcTJ48TCUMLqmfjhcJd
+        ),
+        (
+            hex!["e2fb12d87bbb9eb57949b3eb2dd01cc24823194828fb36933f584971dd3e084a"]
+                .unchecked_into(), // 5HCKGEpkLBvq4qwW3ULCirPWBNJycG7Jg36bLRLvG1J722us
+            hex!["7a7358d81391a4f9048efbb13ebf8be3de7b4b5c34dddd835609088647d27a4a"]
+                .unchecked_into(), // 5EqFxtEx9QQN3BJx7bHi9YmLxDzYmTj6ChTtdqhuk9WbrUUD
+            hex!["7878bb590eb1a9fde93690038580c84b966c04e838c2005bcf428772eed396c9"]
+                .unchecked_into(), // 5EnfU7B4zEpwd6jvDQxna349JTYDhcoWDgTvRMu61D8wwtur
+        ),
+    ];
 
-//     testnet_genesis(
-//         vec![
-//             (alice_stash, alice_control, alice_control),
-//             (bob_stash, bob_control, bob_control),
-//             (eve_stash, eve_control, eve_control),
-//         ],
-//         alice_control,
-//         Some(vec![alice_control, bob_control, eve_control]),
-//         false,
-//     )
-// }
+    // root account.
+    let endowed_accounts: Vec<AccountId> = vec![
+        hex!["58149eabec2e986b0dec740f243bbb836f6f6dc48a656e7c036471f1f6e06f6d"].unchecked_into(), //5E4CCLsJ3P1UBXgRdzFEQivMMJEqfg3VBj1tpvx8dsJa2FxQ
+    ];
+    const MILLICENTS: u128 = 1_000_000_000;
+    const CENTS: u128 = 1_000 * MILLICENTS; // assume this is worth about a cent.
+    const DOLLARS: u128 = 100 * CENTS;
 
-// /// ladder testnet config
-// pub fn ladder_testnet_config() -> ChainSpec {
-//     ChainSpec::from_genesis(
-//         "Ladder Testnet",
-//         "Ladder Testnet",
-//         local_testnet_genesis,
-//         vec![],
-//         // TODO, remove it when substrate upgrade to latest version. test that hasn't this problem.
-//         Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
-//         None,
-//         None,
-//         None,
-//     )
-// }
+    const SECS_PER_BLOCK: u64 = 8;
+    const MINUTES: u64 = 60 / SECS_PER_BLOCK;
+    const HOURS: u64 = MINUTES * 60;
+    const DAYS: u64 = HOURS * 24;
+
+    const ENDOWMENT: u128 = 10_000_000 * DOLLARS;
+    const STASH: u128 = 100 * DOLLARS;
+
+    GenesisConfig {
+		consensus: Some(ConsensusConfig {
+			code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),
+			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+		}),
+		system: None,
+		indices: Some(IndicesConfig {
+			ids: endowed_accounts.iter().cloned()
+				.chain(initial_authorities.iter().map(|x| x.0.clone()))
+                .chain(initial_authorities.iter().map(|x| x.1.clone()))
+				.collect::<Vec<_>>(),
+		}),
+		balances: Some(BalancesConfig {
+			transaction_base_fee: 1,
+			transaction_byte_fee: 0,
+			existential_deposit: 500,
+			transfer_fee: 0,
+			creation_fee: 0,
+			balances: endowed_accounts.iter().cloned()
+				.map(|k| (k, ENDOWMENT))
+				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+                .chain(initial_authorities.iter().map(|x| (x.1.clone(), STASH)))
+				.collect(),
+			vesting: vec![],
+		}),
+		session: Some(SessionConfig {
+			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+			session_length: 10,
+			keys: initial_authorities.iter().map(|x| (x.1.clone(), x.2.clone())).collect::<Vec<_>>(),
+		}),
+		staking: Some(StakingConfig {
+			current_era: 0,
+			minimum_validator_count: 2,
+			validator_count: 3,
+			sessions_per_era: 5,
+			bonding_duration: 12,
+			offline_slash: Perbill::zero(),
+			session_reward: Perbill::zero(),
+			current_session_reward: 0,
+			offline_slash_grace: 0,
+			stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+		}),
+		democracy: Some(DemocracyConfig {
+			launch_period: 9,
+			voting_period: 18,
+			minimum_deposit: 10,
+			public_delay: 0,
+			max_lock_periods: 6,
+		}),
+		council_seats: Some(CouncilSeatsConfig {
+			active_council: vec![],
+			candidacy_bond: 10 * DOLLARS,
+			voter_bond: 1 * DOLLARS,
+			present_slash_per_voter: 1 * CENTS,
+			carry_count: 6,
+			presentation_duration: 1 * DAYS,
+			approval_voting_period: 2 * DAYS,
+			term_duration: 28 * DAYS,
+			desired_seats: 0,
+			inactive_grace_period: 1,    // one additional vote should go by before an inactive voter can be reaped.
+		}),
+		council_voting: Some(CouncilVotingConfig {
+			cooloff_period: 75,
+			voting_period: 20,
+			enact_delay_period: 0,
+		}),
+		timestamp: Some(TimestampConfig {
+			minimum_period: 2,                    // 2*2=4 second block time.
+		}),
+		treasury: Some(TreasuryConfig {
+			proposal_bond: Permill::from_percent(5),
+			proposal_bond_minimum: 1_000_000,
+			spend_period: 12 * 60 * 24,
+			burn: Permill::from_percent(50),
+		}),
+		contract: Some(ContractConfig {
+			signed_claim_handicap: 2,
+			rent_byte_price: 4,
+			rent_deposit_offset: 1000,
+			storage_size_offset: 8,
+			surcharge_reward: 150,
+			tombstone_deposit: 16,
+			transaction_base_fee: 1 * CENTS,
+			transaction_byte_fee: 10 * MILLICENTS,
+			transfer_fee: 1 * CENTS,
+			creation_fee: 1 * CENTS,
+			contract_fee: 1 * CENTS,
+			call_base_fee: 1000,
+			create_base_fee: 1000,
+			gas_price: 1 * MILLICENTS,
+			max_depth: 1024,
+			block_gas_limit: 10_000_000,
+			current_schedule: Default::default(),
+		}),
+		sudo: Some(SudoConfig {
+			key: endowed_accounts[0].clone(),
+		}),
+		grandpa: Some(GrandpaConfig {
+			authorities: initial_authorities.iter().map(|x| (x.2.clone(), 1)).collect(),
+		}),
+		bank: Some(BankConfig{
+			enable_record: true,
+			session_length: 10,
+			reward_session_value: vec![1000,5000,60000,80000],
+			reward_session_factor: vec![1,2,3,4],
+			reward_balance_value: vec![1000,5000,60000,80000],
+			reward_balance_factor: vec![1,2,3,4],
+			total_despositing_balance:0 ,
+		})
+    }
+
+    // GenesisConfig {
+	// 	consensus: Some(ConsensusConfig {
+	// 		code: include_bytes!("../../runtime/wasm/target/wasm32-unknown-unknown/release/node_runtime.compact.wasm").to_vec(),    // FIXME change once we have #1252
+	// 		authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+	// 	}),
+	// 	system: None,
+	// 	balances: Some(BalancesConfig {
+	// 		transaction_base_fee: 1 * CENTS,
+	// 		transaction_byte_fee: 10 * MILLICENTS,
+	// 		balances: endowed_accounts.iter().cloned()
+	// 			.map(|k| (k, ENDOWMENT))
+	// 			.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
+	// 			.collect(),
+	// 		existential_deposit: 1 * DOLLARS,
+	// 		transfer_fee: 1 * CENTS,
+	// 		creation_fee: 1 * CENTS,
+	// 		vesting: vec![],
+	// 	}),
+	// 	indices: Some(IndicesConfig {
+	// 		ids: endowed_accounts.iter().cloned()
+	// 			.chain(initial_authorities.iter().map(|x| x.0.clone()))
+	// 			.collect::<Vec<_>>(),
+	// 	}),
+	// 	session: Some(SessionConfig {
+	// 		validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+	// 		session_length: 5 * MINUTES,
+	// 		keys: initial_authorities.iter().map(|x| (x.1.clone(), x.2.clone())).collect::<Vec<_>>(),
+	// 	}),
+	// 	staking: Some(StakingConfig {
+	// 		current_era: 0,
+	// 		offline_slash: Perbill::from_billionths(1_000_000),
+	// 		session_reward: Perbill::from_billionths(2_065),
+	// 		current_session_reward: 0,
+	// 		validator_count: 3,
+	// 		sessions_per_era: 12,
+	// 		bonding_duration: 12,
+	// 		offline_slash_grace: 4,
+	// 		minimum_validator_count: 3,
+	// 		stakers: initial_authorities.iter().map(|x| (x.0.clone(), x.1.clone(), STASH, StakerStatus::Validator)).collect(),
+	// 		invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+	// 	}),
+	// 	democracy: Some(DemocracyConfig {
+	// 		launch_period: 10 * MINUTES,    // 1 day per public referendum
+	// 		voting_period: 10 * MINUTES,    // 3 days to discuss & vote on an active referendum
+	// 		minimum_deposit: 50 * DOLLARS,    // 12000 as the minimum deposit for a referendum
+	// 		public_delay: 10 * MINUTES,
+	// 		max_lock_periods: 6,
+	// 	}),
+	// 	council_seats: Some(CouncilSeatsConfig {
+	// 		active_council: vec![],
+	// 		candidacy_bond: 10 * DOLLARS,
+	// 		voter_bond: 1 * DOLLARS,
+	// 		present_slash_per_voter: 1 * CENTS,
+	// 		carry_count: 6,
+	// 		presentation_duration: 1 * DAYS,
+	// 		approval_voting_period: 2 * DAYS,
+	// 		term_duration: 28 * DAYS,
+	// 		desired_seats: 0,
+	// 		inactive_grace_period: 1,    // one additional vote should go by before an inactive voter can be reaped.
+	// 	}),
+	// 	council_voting: Some(CouncilVotingConfig {
+	// 		cooloff_period: 4 * DAYS,
+	// 		voting_period: 1 * DAYS,
+	// 		enact_delay_period: 0,
+	// 	}),
+	// 	timestamp: Some(TimestampConfig {
+	// 		minimum_period: SECS_PER_BLOCK / 2, // due to the nature of aura the slots are 2*period
+	// 	}),
+	// 	treasury: Some(TreasuryConfig {
+	// 		proposal_bond: Permill::from_percent(5),
+	// 		proposal_bond_minimum: 1 * DOLLARS,
+	// 		spend_period: 1 * DAYS,
+	// 		burn: Permill::from_percent(50),
+	// 	}),
+	// 	contract: Some(ContractConfig {
+	// 		signed_claim_handicap: 2,
+	// 		rent_byte_price: 4,
+	// 		rent_deposit_offset: 1000,
+	// 		storage_size_offset: 8,
+	// 		surcharge_reward: 150,
+	// 		tombstone_deposit: 16,
+	// 		transaction_base_fee: 1 * CENTS,
+	// 		transaction_byte_fee: 10 * MILLICENTS,
+	// 		transfer_fee: 1 * CENTS,
+	// 		creation_fee: 1 * CENTS,
+	// 		contract_fee: 1 * CENTS,
+	// 		call_base_fee: 1000,
+	// 		create_base_fee: 1000,
+	// 		gas_price: 1 * MILLICENTS,
+	// 		max_depth: 1024,
+	// 		block_gas_limit: 10_000_000,
+	// 		current_schedule: Default::default(),
+	// 	}),
+	// 	sudo: Some(SudoConfig {
+	// 		key: endowed_accounts[0].clone(),
+	// 	}),
+	// 	grandpa: Some(GrandpaConfig {
+	// 		authorities: initial_authorities.iter().map(|x| (x.2.clone(), 1)).collect(),
+	// 	}),
+	// 	bank: Some(BankConfig{
+	// 		enable_record: true,
+	// 		session_length: 10,
+	// 		reward_session_value: vec![1000,5000,60000,80000],
+	// 		reward_session_factor: vec![1,2,3,4],
+	// 		reward_balance_value: vec![1000,5000,60000,80000],
+	// 		reward_balance_factor: vec![1,2,3,4],
+	// 		total_despositing_balance:0 ,
+	// 	})
+	// }
+}
+
+/// ladder testnet config
+pub fn ladder_testnet_config() -> ChainSpec {
+    ChainSpec::from_genesis(
+        "Ladder Testnet v0.4.0",
+        "Ladder Testnet",
+        ladder_testnet_genesis,
+        vec![],
+        // TODO, remove it when substrate upgrade to latest version. test that hasn't this problem.
+        Some(TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])),
+        None,
+        None,
+        None,
+    )
+}
 
 #[cfg(test)]
 mod tests {

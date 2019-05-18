@@ -14,9 +14,9 @@ PORT=$2
 NODE_NAME=$3
 LOG_FILE="$NODE_NAME.log"
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-EXE_PATH="$PWD/ladder"
+EXE_PATH="$PWD/target/debug/ladder"
 BASE_PATH="$PWD/$NODE_NAME"
 
-RUST_LOG='info' $EXE_PATH --chain=ladder --base-path=$BASE_PATH --key=$KEY --name=$NODE_NAME --bootnodes /ip4/122.112.245.113/tcp/30333/p2p/QmQZ8TjTqeDj3ciwr93EJ95hxfDsb9pEYDizUAbWpigtQN --port $PORT --validator --telemetry-url ws://telemetry.polkadot.io:1024 > $LOG_FILE 2>&1 & 
+RUST_LOG='info' $EXE_PATH --chain=ladder --base-path=$BASE_PATH --key=$KEY --name=$NODE_NAME --bootnodes /ip4/192.168.1.109/tcp/30333/p2p/QmYzQGPSnXSXY8PiMBeeeh6e9kHA8j6F7aJdjwWzNxnGUi --port $PORT --validator --telemetry-url ws://telemetry.polkadot.io:1024 > $LOG_FILE 2>&1 & 
 
 echo "Node run with $NODE_NAME, Log in $LOG_FILE file"
